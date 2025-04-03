@@ -294,6 +294,7 @@ get_version(){
 LOGFILE="auto-deny-rules.log"
 BASEDIR=$(dirname -- $0)
 
+#init variables
 include_labels=""
 exclude_labels=""
 
@@ -319,12 +320,12 @@ do
             ;;
         -i|--include)
             shift
-            include_labels=$1
+            include_labels="$1"
             shift
             ;;
         -e|--exclude)
             shift
-            exclude_labels=$1
+            exclude_labels="$1"
             shift
             ;;
         -v|--version)
