@@ -96,6 +96,7 @@ create_deny_rules(){
             exit 0
         fi
         echo "Continuing..."
+        break
     done
     #get pce version
     major_version=$(curl -s https://$user:$key@$fqdn:$port/api/v2/users/1/kvpair/whats_new | jq -r .major)
