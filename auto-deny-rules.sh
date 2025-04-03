@@ -133,6 +133,7 @@ create_deny_rules(){
             #check if env is in include parameter
             if [[ $include_labels =~ (^|,)"$env_label_name"(,|$)|"$env_label_name"$ ]]; then
                 #include
+                :
             else
                 #exclude
                 continue
@@ -143,6 +144,7 @@ create_deny_rules(){
                 continue
             else
                 #include
+                :
             fi
             echo "" | tee -a "$BASEDIR/$LOGFILE"
             echo "Checking service $service_name, environment $env_label_name..."
@@ -163,6 +165,7 @@ create_deny_rules(){
                 #check if app is in include parameter
                 if [[ $include_labels =~ (^|,)"$app_label_name"(,|$)|"$app_label_name"$ ]]; then
                     #include
+                    :
                 else
                     #exclude
                     continue
@@ -173,6 +176,7 @@ create_deny_rules(){
                     continue
                 else
                     #include
+                    :
                 fi
                 echo "$app_label_name" >> "$BASEDIR/$LOGFILE"
                 #query allowed traffic flows
