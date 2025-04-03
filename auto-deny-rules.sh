@@ -131,20 +131,34 @@ create_deny_rules(){
             #get env href name value
             env_label_name=$(curl -s https://$user:$key@$fqdn:$port/api/v2$env_label_href | jq -r .value)
             #check if env is in include parameter
-            if [[ $include_labels =~ (^|,)"$env_label_name"(,|$)|"$env_label_name"$ ]]; then
-                #include
-                :
-            else
-                #exclude
-                continue
+            if [[ $include_labels ]]; then
+                if [ "$include_labels" = "$env_label_name" ]; then
+                    #include
+                    :
+                else
+                    if [[ "$include_labels" =~ (^|,)"$env_label_name"(,|$) ]]; then
+                        #include
+                        :
+                    else
+                        #exclude
+                        continue
+                    fi
+                fi
             fi
             #check if env is in exclude parameter
-            if [[ $exclude_labels =~ (^|,)"$env_label_name"(,|$)|"$env_label_name"$ ]]; then
-                #exclude
-                continue
-            else
-                #include
-                :
+            if [[ $exclude_labels ]]; then
+                if [ "$exclude_labels" = "$env_label_name" ]; then
+                    #exclude
+                    continue
+                else
+                    if [[ "$exclude_labels" =~ (^|,)"$env_label_name"(,|$) ]]; then
+                        #exclude
+                        continue
+                    else
+                        #include
+                        :
+                    fi
+                fi
             fi
             echo "" | tee -a "$BASEDIR/$LOGFILE"
             echo "Checking service $service_name, environment $env_label_name..."
@@ -163,20 +177,34 @@ create_deny_rules(){
                 #get app name
                 app_label_name=$(curl -s https://$user:$key@$fqdn:$port/api/v2$unique_app_label_href | jq -r .value)
                 #check if app is in include parameter
-                if [[ $include_labels =~ (^|,)"$app_label_name"(,|$)|"$app_label_name"$ ]]; then
-                    #include
-                    :
-                else
-                    #exclude
-                    continue
+                if [[ $include_labels ]]; then
+                    if [ "$include_labels" = "$app_label_name" ]; then
+                        #include
+                        :
+                    else
+                        if [[ "$include_labels" =~ (^|,)"$app_label_name"(,|$) ]]; then
+                            #include
+                            :
+                        else
+                            #exclude
+                            continue
+                        fi
+                    fi
                 fi
-                #check if app is in exclude parameter
-                if [[ $exclude_labels =~ (^|,)"$app_label_name"(,|$)|"$app_label_name"$ ]]; then
-                    #exclude
-                    continue
-                else
-                    #include
-                    :
+                #check if env is in exclude parameter
+                if [[ $exclude_labels ]]; then
+                    if [ "$exclude_labels" = "$app_label_name" ]; then
+                        #exclude
+                        continue
+                    else
+                        if [[ "$exclude_labels" =~ (^|,)"$app_label_name"(,|$) ]]; then
+                            #exclude
+                            continue
+                        else
+                            #include
+                            :
+                        fi
+                    fi
                 fi
                 echo "$app_label_name" >> "$BASEDIR/$LOGFILE"
                 #query allowed traffic flows
