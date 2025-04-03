@@ -266,6 +266,9 @@ get_version(){
 LOGFILE="auto-deny-rules.log"
 BASEDIR=$(dirname -- $0)
 
+include_labels=""
+exclude_labels=""
+
 get_jq_version
 
 get_illumio_config
