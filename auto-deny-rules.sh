@@ -318,10 +318,12 @@ do
             shift
             ;;
         -i|--include)
+            shift
             include_labels=$1
             shift
             ;;
         -e|--exclude)
+            shift
             exclude_labels=$1
             shift
             ;;
