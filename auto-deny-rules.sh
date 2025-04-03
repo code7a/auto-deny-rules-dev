@@ -48,7 +48,7 @@ examples:
     ./auto-deny-rules.sh -b
     ./auto-deny-rules.sh -b -m
     ./auto-deny-rules.sh --exclude-broadcast --exclude-multicast
-    ./auto-deny-rules.sh --include APP1,DEV
+    ./auto-deny-rules.sh --include DEV,APP1
     ./auto-deny-rules.sh --exclude PROD
     ./auto-deny-rules.sh --version
     ./auto-deny-rules.sh --help
@@ -86,6 +86,17 @@ EOF
 }
 
 create_deny_rules(){
+    #notice
+    echo "This script can take several hours to complete. It will request traffic queries for each risky service, env, and app."
+    echo "Please run in a screen or tmux session to ensure it does not expire."
+    while true; do
+        read -rp "Press [Enter] to continue or type 'q' to quit: " input
+        if [[ "$input" == "q" ]]; then
+            echo "Exiting..."
+            exit 0
+        fi
+        echo "Continuing..."
+    done
     #get pce version
     major_version=$(curl -s https://$user:$key@$fqdn:$port/api/v2/users/1/kvpair/whats_new | jq -r .major)
     #get auto deny rules rule set
@@ -105,8 +116,6 @@ create_deny_rules(){
         disable_payload=$(echo $rule_set_response | jq '.deny_rules |= map(if .enabled == true then .enabled = false else . end)' | jq -c '{deny_rules: [.deny_rules[] | {providers, consumers, enabled, ingress_services}]} + {enabled: false} + {"name":"Disabled-Deny-Rules-'$(date +"%Y%m%d%H%M")'"}')
         curl -s https://$user:$key@$fqdn:$port/api/v2$rule_set_curl_response_href -X PUT -H 'content-type: application/json' --data-raw $disable_payload
     fi
-    #sleep after rename
-    sleep 10
     #create auto deny rules rulesent
     rule_set_curl_post_response=$(curl -s https://$user:$key@$fqdn:$port/api/v2/orgs/$org/sec_policy/draft/rule_sets -X POST -H "content-type:application/json" --data-raw '{"name":"Auto-Deny-Rules","description":"created by auto-deny-rules.sh","scopes":[[]]}')
     echo "$rule_set_curl_post_response" >> "$BASEDIR/$LOGFILE"
@@ -175,7 +184,7 @@ create_deny_rules(){
             unique_app_label_hrefs=($(printf "%s\n" "${app_label_hrefs[@]}" | sort -u))
             echo "$unique_app_label_hrefs" >> "$BASEDIR/$LOGFILE"
             apps_with_no_traffic_flows=()
-            for unique_app_label_href in "${unique_app_label_hrefs[@]}"; do (
+            for unique_app_label_href in "${unique_app_label_hrefs[@]}"; do
                 #get app name
                 app_label_name=$(curl -s https://$user:$key@$fqdn:$port/api/v2$unique_app_label_href | jq -r .value)
                 #check if app is in include parameter
@@ -250,9 +259,7 @@ create_deny_rules(){
                         apps_with_no_traffic_flows+=($unique_app_label_href)
                     fi
                 fi
-            ) &
             done
-            wait
             if [[ -z $apps_with_no_traffic_flows ]]; then continue; fi
             #update apps label href array
             rule_set_app_hrefs='['
@@ -268,6 +275,7 @@ create_deny_rules(){
             echo "$deny_rules" >> "$BASEDIR/$LOGFILE"
         done
     done
+    echo "Done."
 }
 
 log_clean_up(){
